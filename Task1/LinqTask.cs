@@ -9,9 +9,7 @@ namespace Task1
     {
         public static IEnumerable<Customer> Linq1(IEnumerable<Customer> customers, decimal limit)
         {
-            var result = customers.Where(c => c.Orders.Select(o => o.Total).Sum() > limit);
-
-            return result;
+            return customers.Where(c => c.Orders.Select(o => o.Total).Sum() > limit);
         }
 
         public static IEnumerable<(Customer customer, IEnumerable<Supplier> suppliers)> Linq2(
@@ -19,13 +17,7 @@ namespace Task1
             IEnumerable<Supplier> suppliers
         )
         {
-            var result = from customer in customers
-                from supplier in suppliers
-                //where c.
-                    select new { c = customer, s = supplier};
-
-            return (IEnumerable<(Customer customer, IEnumerable<Supplier> suppliers)>)result;
-            //throw new NotImplementedException();
+            throw new NotImplementedException();
         }
 
         public static IEnumerable<(Customer customer, IEnumerable<Supplier> suppliers)> Linq2UsingGroup(
@@ -38,18 +30,18 @@ namespace Task1
 
         public static IEnumerable<Customer> Linq3(IEnumerable<Customer> customers, decimal limit)
         {
-
-
-            throw new NotImplementedException();
+            return (from customer in customers from order in customer.Orders where order.Total > limit select customer).Distinct().ToList();
         }
 
         public static IEnumerable<(Customer customer, DateTime dateOfEntry)> Linq4(
             IEnumerable<Customer> customers
         )
         {
+            var res = from customer in customers
+                where customer.Orders.Any()
+                select new { customer, dateTime = customer.Orders.OrderBy(o => o.OrderDate).First() };
 
-
-            throw new NotImplementedException();
+            return (IEnumerable<(Customer customer, DateTime dateOfEntry)>)res;
         }
 
         public static IEnumerable<(Customer customer, DateTime dateOfEntry)> Linq5(
@@ -99,7 +91,10 @@ namespace Task1
 
         public static string Linq10(IEnumerable<Supplier> suppliers)
         {
-            throw new NotImplementedException();
+            var res1 = (from s in suppliers
+                select s.Country).Distinct();
+
+            return string.Join("", res1);
         }
     }
 }
