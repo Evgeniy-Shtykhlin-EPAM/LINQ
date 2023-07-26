@@ -1,6 +1,8 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using System.Xml.Linq;
 using Task1.DoNotChange;
 
 namespace Task1
@@ -76,7 +78,21 @@ namespace Task1
 		            price - 19.0000
              */
 
-            throw new NotImplementedException();
+           var result = products.GroupBy(p => p.Category)
+                .Select(g=> new Linq7CategoryGroup
+                {
+                    Category = g.Key,
+                    UnitsInStockGroup = g.GroupBy(p=>p.UnitsInStock)
+                        .Select(x=>new Linq7UnitsInStockGroup
+                        {
+                            UnitsInStock = x.Key,
+                            Prices =x.GroupBy(p=>p.UnitPrice)
+                                .Select(z=>z.Key)
+                        })
+                    
+                });
+
+            return result;
         }
 
         public static IEnumerable<(decimal category, IEnumerable<Product> products)> Linq8(
@@ -86,22 +102,67 @@ namespace Task1
             decimal expensive
         )
         {
-            throw new NotImplementedException();
+            if (products is null)
+            {
+                throw new ArgumentNullException();
+
+            }
+            foreach (var product in products)
+            {
+                if (product.UnitPrice <= cheap)
+                {
+                    product.UnitPrice = cheap;
+                }
+                else if (product.UnitPrice > cheap && product.UnitPrice <= middle)
+                {
+                    product.UnitPrice = middle;
+                }
+                else
+                {
+                    product.UnitPrice = expensive;
+                }
+            }
+
+            var result = products.GroupBy(p => p.UnitPrice)
+                .Select(g =>
+                        (
+                            g.Key,
+                            products = g.Select(x => x)));
+
+            return result;
         }
 
         public static IEnumerable<(string city, int averageIncome, int averageIntensity)> Linq9(
             IEnumerable<Customer> customers
         )
         {
+            var result = customers.GroupBy(c => c.City)
+                .Select(g => 
+                (
+                   g.Key,
+                   Math.Round(g.Select(c => c.Orders.Sum(o => o.Total)).Sum(x => x) / g.Select(c => c).Count()),
+                   g.Select(c => c.Orders.Select(co => co).Count()).Count()
+
+                ));
+        
+                //(
+                    //g.Key,
+                    //Math.Round(g.Select(c => c.Orders.Sum(o => o.Total)).Sum(x => x) / g.Select(c => c).Count()),
+                    //g.Select(c => c.Orders.Select(co=>co).Count()).Count()));
+
+
+
+
+            return (IEnumerable<(string city, int averageIncome, int averageIntensity)>)result;
             throw new NotImplementedException();
         }
 
         public static string Linq10(IEnumerable<Supplier> suppliers)
         {
-            var res1 = (from s in suppliers
-                select s.Country).Distinct();
+            var result = string.Join("",
+                (suppliers.OrderBy(s => s.Country.Length).ThenBy(s => s.Country).Select(s => s.Country).Distinct()));
 
-            return string.Join("", res1);
+            return result;
         }
     }
 }
