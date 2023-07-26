@@ -37,23 +37,30 @@ namespace Task1
             IEnumerable<Customer> customers
         )
         {
-            var res = from customer in customers
+            var result = from customer in customers
                 where customer.Orders.Any()
-                select new { customer, dateTime = customer.Orders.OrderBy(o => o.OrderDate).First() };
+                select ( customer, customer.Orders.OrderBy(o => o.OrderDate).First().OrderDate );
 
-            return (IEnumerable<(Customer customer, DateTime dateOfEntry)>)res;
+            return result;
         }
 
         public static IEnumerable<(Customer customer, DateTime dateOfEntry)> Linq5(
             IEnumerable<Customer> customers
         )
         {
-            throw new NotImplementedException();
+            var result = customers.Where(c => c.Orders.Any())
+                .OrderBy(x => x.Orders[0].OrderDate)
+                .Select(c=> (c, c.Orders.OrderBy(o => o.OrderDate).First().OrderDate ));
+
+            return result;
         }
 
         public static IEnumerable<Customer> Linq6(IEnumerable<Customer> customers)
         {
-            throw new NotImplementedException();
+            var result = customers.Where(c => !c.PostalCode.All(char.IsNumber) 
+                                              || string.IsNullOrEmpty(c.Region) 
+                                              || !c.Phone.Contains('(') );
+            return result;
         }
 
         public static IEnumerable<Linq7CategoryGroup> Linq7(IEnumerable<Product> products)
