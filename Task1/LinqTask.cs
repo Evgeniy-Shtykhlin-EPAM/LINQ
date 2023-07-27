@@ -19,7 +19,18 @@ namespace Task1
             IEnumerable<Supplier> suppliers
         )
         {
-            throw new NotImplementedException();
+            var result2 = from customer in customers
+                          join supplier in suppliers on new { customer.Country , customer.City } equals new { supplier.Country, supplier.City} into temp
+                          from t in temp.DefaultIfEmpty()
+                          select new
+                          {
+                              Customer=customer,
+                              Supplier = t
+                          };
+            var x = result2.GroupBy(r => r.Customer)
+                .Select(g => (g.Key, g.Select(s => s.Supplier?? new Supplier(){Country = g.Key.Country,City = g.Key.City})));
+
+            return x;
         }
 
         public static IEnumerable<(Customer customer, IEnumerable<Supplier> suppliers)> Linq2UsingGroup(
@@ -60,8 +71,8 @@ namespace Task1
         public static IEnumerable<Customer> Linq6(IEnumerable<Customer> customers)
         {
             var result = customers.Where(c => !c.PostalCode.All(char.IsNumber) 
-                                              || string.IsNullOrEmpty(c.Region) 
-                                              || !c.Phone.Contains('(') );
+                                              || string.IsNullOrWhiteSpace(c.Region) 
+                                              || !c.Phone.Contains('(') && !c.Phone.Contains(')'));
             return result;
         }
 
@@ -140,21 +151,11 @@ namespace Task1
                 .Select(g => 
                 (
                    g.Key,
-                   Math.Round(g.Select(c => c.Orders.Sum(o => o.Total)).Sum(x => x) / g.Select(c => c).Count()),
-                   g.Select(c => c.Orders.Select(co => co).Count()).Count()
-
+                   (int)Math.Round(g.Select(c => c.Orders.Sum(o => o.Total)).Sum(x => x) / g.Select(c => c).Count()),
+                   (int)g.Select(c => c.Orders.Count()).Average(o=>o)
                 ));
-        
-                //(
-                    //g.Key,
-                    //Math.Round(g.Select(c => c.Orders.Sum(o => o.Total)).Sum(x => x) / g.Select(c => c).Count()),
-                    //g.Select(c => c.Orders.Select(co=>co).Count()).Count()));
 
-
-
-
-            return (IEnumerable<(string city, int averageIncome, int averageIntensity)>)result;
-            throw new NotImplementedException();
+            return result;
         }
 
         public static string Linq10(IEnumerable<Supplier> suppliers)
